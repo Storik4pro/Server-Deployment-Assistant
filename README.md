@@ -1,4 +1,6 @@
 ## About
+![logo](https://github.com/user-attachments/assets/2325c93e-4726-42ee-852b-8075e00e5497)
+
 **Server Deployment Assistant** (SDA) is a server-side solution for Browser-as-a-Service applications.
 
 >[!Important]
