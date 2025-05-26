@@ -31,6 +31,7 @@ using ServerDeploymentAssistant.src.Managers;
 using ServerDeploymentAssistant.src;
 using System.Reflection;
 using Instances;
+using System.Deployment.Application;
 
 namespace ServerDeploymentAssistant
 {
@@ -48,9 +49,12 @@ namespace ServerDeploymentAssistant
         private static string cachePath;
         static void Main(string[] margs)
         {
+            var version = Assembly.GetEntryAssembly().GetName().Version?.ToString();
+
+            Console.Title = "Server Deployment Assistant";
             if (margs.Contains("--help"))
             {
-                Console.WriteLine("SERVER DEPLOYMENT ASSISTANT, version 1.0.0.0. Help:");
+                Console.WriteLine($"SERVER DEPLOYMENT ASSISTANT, version {version}. Help:");
                 Console.WriteLine("  --help                          Show this help message.");
                 Console.WriteLine("  --set-xml-settings-file <path>  Set custom XML settings file path.");
                 Console.WriteLine("  --disable-press-button-request  Disable button press requests.");
@@ -59,7 +63,7 @@ namespace ServerDeploymentAssistant
 
             Console.Clear();
 
-            Logger.CreateLog($"SERVER DEPLOYMENT ASSISTANT, version 1.0.0.0");
+            Logger.CreateLog($"SERVER DEPLOYMENT ASSISTANT, version {version}");
             Logger.CreateLog($"Run application with <\"--help\"> flag to view all available features", ConsoleColor.Cyan);
             Logger.CreateLog($"Getting ready for start ... ");
 
@@ -91,9 +95,19 @@ namespace ServerDeploymentAssistant
             }
             else
             {
-                string baseDir = AppContext.BaseDirectory;
-                string filePath = Path.Combine(baseDir, "data", "settings", "settings.xml");
-                SettingsManager.Instance.SetSettingsFile(filePath);
+                string _settingsFile;
+                if (ApplicationDeployment.IsNetworkDeployed)
+                {
+                    var dataDir = ApplicationDeployment.CurrentDeployment.DataDirectory;
+                    _settingsFile = Path.Combine(dataDir, "data", "settings", "settings.xml");
+                    SettingsManager.Instance.SetSettingsFile(_settingsFile);
+                }
+                else
+                {
+                    var baseDir = AppContext.BaseDirectory;
+                    _settingsFile = Path.Combine(baseDir, "data", "settings", "settings.xml");
+                    SettingsManager.Instance.SetSettingsFile(_settingsFile);
+                }
             }
 
             port = SettingsManager.Instance.GetValue<int>("VideoStreamSettings", "VideoStreamPort");
