@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--Server XML settings file. Read support page, before editing. Enjoy!-->
+<Settings>
+  <Group Name="AudioStreamSettings">
+    <Setting Key="AudioStreamPort" Type="int" Value="8082"/>
+    <Setting Key="UseAudioResampling" Type="bool" Value="true"/>
+    <Setting Key="AudioStreamResamplingRate" Type="int" Value="16000"/>
+    <Setting Key="UseAudioGzipCompress" Type="bool" Value="true"/>
+  </Group>
+  <Group Name="VideoStreamSettings">
+    <Setting Key="VideoStreamPort" Type="int" Value="8081"/>
+    <Setting Key="UseVideoGzipCompress" Type="bool" Value="true"/>
+    <Setting Key="ScalingFactor" Type="int" Value="1"/>
+    <Setting Key="FullPageScreenshotQuality" Type="int" Value="50"/>
+  </Group>
+  <Group Name="BrowserSettings">
+    <Setting Key="UserAgent" Type="string" Value="Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"/>
+    <Setting Key="FirstRunUrl" Type="string" Value="https://google.com/"/>
+    <Setting Key="CachePath" Type="string" Value="CefSharp\Cache"/>
+    <Setting Key="SearchSystem" Type="string" Value="https://www.google.com/search?q="/>
+  </Group>
+</Settings>
