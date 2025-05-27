@@ -13,6 +13,9 @@
 | Visual C++ Redistributable   | Microsoft Visual C++ 2015 Redistributable (x86/x64) version 14.0.24215 |
 | Operating System             | Windows 10 x64, build 19041 or later                |
 
+## Backward Compatibility Notes
+Despite my efforts to maximize compatibility, some features may undergo changes that make backward compatibility impossible. Please take this into account when distributing SDA with your product.
+
 >[!Important]
 >For get information about SDA API please, visit the project page on [storik4pro.github.io](https://storik4pro.github.io).
 >
