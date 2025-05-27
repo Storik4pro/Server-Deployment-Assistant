@@ -3,6 +3,16 @@
 
 **Server Deployment Assistant** (SDA) is a server-side solution for Browser-as-a-Service applications.
 
+## Requirements
+| Parameter                    | Minimum Requirement                                 |
+|------------------------------|-----------------------------------------------------|
+| RAM                          | 4 GB or more                                        |
+| Storage                      | 500 MB or more of available disk space              |
+| Internet Connection          | Always-on Internet connection required              |
+| .NET Framework               | Microsoft .NET Framework 4.8                        |
+| Visual C++ Redistributable   | Microsoft Visual C++ 2015 Redistributable (x86/x64) version 14.0.24215 |
+| Operating System             | Windows 10 x64, build 19041 or later                |
+
 >[!Important]
 >For get information about SDA API please, visit the project page on [storik4pro.github.io](https://storik4pro.github.io).
 >
