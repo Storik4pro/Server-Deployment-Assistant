@@ -31,6 +31,12 @@ namespace ServerDeploymentAssistant.src.Network
             protected override void OnOpen()
             {
                 Logger.CreateLog("[CONNECTION] WebSocket connection opened.");
+                var handshake = new HandshakePacket
+                {
+                    ServerVersion = StateHelper.Instance.Version, 
+                    Features = StateHelper.Instance.SupportedFeatures,
+                };
+                StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(handshake));
             }
 
             protected override void OnClose(CloseEventArgs e)
@@ -245,6 +251,7 @@ namespace ServerDeploymentAssistant.src.Network
 
                         Logger.CreateLog($"Window is resized. New width is {w}. New height is {h}");
 
+                        BrowserHelper.SendPageScreenshot();
 
                         break;
 
@@ -419,7 +426,7 @@ namespace ServerDeploymentAssistant.src.Network
         private static void NotifyOpenTabs()
         {
             string stringOpenTabs = "";
-            stringOpenTabs = string.Join(";", TabsManager.Instance.tabs.Select(tab => $"{tab.Title}|{tab.GlobalId}"));
+            stringOpenTabs = string.Join(";", TabsManager.Instance.tabs.Select(tab => $"{tab.Title}|{tab.GlobalId}|{tab.Url}"));
 
             var cp = new TextPacket
             {
@@ -427,11 +434,6 @@ namespace ServerDeploymentAssistant.src.Network
                 text = stringOpenTabs
             };
             webSocketServer.WebSocketServices.Broadcast(JsonConvert.SerializeObject(cp));
-        }
-
-        private static void SendNewScreenshot()
-        {
-
         }
 
         private static void ChangeActiveBrowserSize(int width, int height)
