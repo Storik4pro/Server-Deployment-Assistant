@@ -36,6 +36,7 @@ namespace ServerDeploymentAssistant
         EditOpenTabTitle,
         IsClientCanSendGoBackRequest,
         IsClientCanSendGoForwardRequest,
+        Handshake
     }
 
     public enum PacketType
@@ -62,7 +63,13 @@ namespace ServerDeploymentAssistant
         IsCanGoBack,
         IsCanGoForward,
         SendKeyCommand,
-        SendChar
+        SendChar,
+    }
+    public class HandshakePacket
+    {
+        public TextPacketType PType { get; set; } = TextPacketType.Handshake;
+        public string ServerVersion { get; set; }
+        public string[] Features { get; set; }
     }
     public struct DiscoveryPacket
     {
