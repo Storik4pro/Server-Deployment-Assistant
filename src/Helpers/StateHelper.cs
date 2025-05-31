@@ -25,6 +25,12 @@ namespace ServerDeploymentAssistant.src.Helpers
             }
         }
 
+        public string Version { get; set; }
+
+        public readonly string[] SupportedFeatures = { 
+            "RECENT"
+        };
+
         public EventHandler OnNotifyOpenedTabs;
 
         public void NotifyOpenedTabs()
