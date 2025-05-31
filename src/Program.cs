@@ -49,12 +49,12 @@ namespace ServerDeploymentAssistant
         private static string cachePath;
         static void Main(string[] margs)
         {
-            var version = Assembly.GetEntryAssembly().GetName().Version?.ToString();
+            StateHelper.Instance.Version = Assembly.GetEntryAssembly().GetName().Version?.ToString();
 
             Console.Title = "Server Deployment Assistant";
             if (margs.Contains("--help"))
             {
-                Console.WriteLine($"SERVER DEPLOYMENT ASSISTANT, version {version}. Help:");
+                Console.WriteLine($"SERVER DEPLOYMENT ASSISTANT, version {StateHelper.Instance.Version}. Help:");
                 Console.WriteLine("  --help                          Show this help message.");
                 Console.WriteLine("  --set-xml-settings-file <path>  Set custom XML settings file path.");
                 Console.WriteLine("  --disable-press-button-request  Disable button press requests.");
@@ -63,7 +63,7 @@ namespace ServerDeploymentAssistant
 
             Console.Clear();
 
-            Logger.CreateLog($"SERVER DEPLOYMENT ASSISTANT, version {version}");
+            Logger.CreateLog($"SERVER DEPLOYMENT ASSISTANT, version {StateHelper.Instance.Version}");
             Logger.CreateLog($"Run application with <\"--help\"> flag to view all available features", ConsoleColor.Cyan);
             Logger.CreateLog($"Getting ready for start ... ");
 
