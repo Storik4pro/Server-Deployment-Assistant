@@ -28,7 +28,7 @@ namespace ServerDeploymentAssistant.src.Helpers
         public string Version { get; set; }
 
         public readonly string[] SupportedFeatures = { 
-            "RECENT"
+            "RECENT", "CERTINFO"
         };
 
         public EventHandler OnNotifyOpenedTabs;
