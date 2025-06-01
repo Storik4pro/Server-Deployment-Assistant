@@ -74,6 +74,7 @@ namespace ServerDeploymentAssistant.src.Managers
                 Browser = BrowserHelper.CreateChromiumWebBrowser(url)
             };
             AddTab(tab);
+            CurrentBrowser = tab.Browser;
         }
 
         public void AddTab(Tab tab)
@@ -85,11 +86,15 @@ namespace ServerDeploymentAssistant.src.Managers
         public void ChangeActiveBrowser(Tab tab)
         {
             BrowserHelper.RemoveAudioHandlers();
+            BrowserHelper.RemoveCertHandlers();
 
             tabs.Add(tab);
             activeTab = tab;
             CurrentBrowser = tab.Browser;
             BrowserHelper.SetAudioHandlersToBrowser(CurrentBrowser);
+            BrowserHelper.SetCertHandlersToBrowser(CurrentBrowser);
+
+            CertificateHelper.GetAndSendCertInformation(CurrentBrowser);
         }
 
         public ChromiumWebBrowser GetActiveBrowser()
