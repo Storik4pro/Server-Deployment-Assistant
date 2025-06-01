@@ -37,6 +37,8 @@ namespace ServerDeploymentAssistant.src.Network
                     Features = StateHelper.Instance.SupportedFeatures,
                 };
                 StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(handshake));
+
+                CertificateHelper.GetAndSendCertInformation(TabsManager.Instance.CurrentBrowser);
             }
 
             protected override void OnClose(CloseEventArgs e)
@@ -204,7 +206,12 @@ namespace ServerDeploymentAssistant.src.Network
                             TabsManager.Instance.activeTab = tabToActivate;
                             TabsManager.Instance.CurrentBrowser = TabsManager.Instance.activeTab.Browser;
                             BrowserHelper.RemoveAudioHandlers();
+                            BrowserHelper.RemoveCertHandlers();
+
                             BrowserHelper.SetAudioHandlersToBrowser(TabsManager.Instance.activeTab.Browser);
+                            BrowserHelper.SetCertHandlersToBrowser(TabsManager.Instance.activeTab.Browser);
+
+                            CertificateHelper.GetAndSendCertInformation(tabToActivate.Browser);
                             Logger.CreateLog($"Switched to existing tab. Unique id is: {tabToActivate.GlobalId}");
                         }
                         BrowserHelper.SendPageScreenshot();
@@ -383,6 +390,9 @@ namespace ServerDeploymentAssistant.src.Network
                         };
                         StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(cp));
 
+                        break;
+                    case PacketType.RequestCert:
+                        CertificateHelper.GetAndSendCertInformation(TabsManager.Instance.CurrentBrowser);
                         break;
 
                     default:
