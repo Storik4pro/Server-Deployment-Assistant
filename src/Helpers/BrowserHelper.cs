@@ -91,13 +91,54 @@ namespace ServerDeploymentAssistant.src.Helpers
                 else
                 {
                     browser.EvaluateScriptAsync(JavaScriptHelper.SetCursorInInputField);
-                    var response = browser.EvaluateScriptAsync(JavaScriptHelper.GetActiveElementText).ContinueWith(t =>
+                    string _text = "";
+                    var _response = browser.EvaluateScriptAsync(JavaScriptHelper.GetActiveElementText).ContinueWith(t =>
                     {
+                        _text = (string)t.Result.Result;
                         StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(new TextPacket
                         {
                             PType = TextPacketType.TextInputContent,
-                            text = (string)t.Result.Result
+                            text = _text
                         }));
+                    });
+                    var task = browser.EvaluateScriptAsync(JavaScriptHelper.GetActiveTextElementData);
+                    task.ContinueWith(t =>
+                    {
+                        var response = t.Result;
+                        if (!response.Success || response.Result == null)
+                        {
+                            StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(new TextInputContentPacket
+                            {
+                                Text = _text,
+                                Placeholder = "",
+                                px = 0,
+                                py = 0
+                            }));
+                            return;
+                        }
+
+                        if (!(response.Result is IDictionary<string, object> dict))
+                        {
+                            return;
+                        }
+
+                        string value = dict.ContainsKey("value") ? dict["value"]?.ToString() ?? "" : "";
+                        string placeholder = dict.ContainsKey("placeholder") ? dict["placeholder"]?.ToString() ?? "" : "";
+
+                        int x = 0, y = 0;
+
+                        Int32.TryParse(dict["x"].ToString(), out x);
+                        Int32.TryParse(dict["y"].ToString(), out y);
+
+                        var packet = new TextInputContentPacket
+                        {
+                            Text = value,
+                            Placeholder = placeholder,
+                            px = x,
+                            py = y
+                        };
+
+                        StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(packet));
                     });
                 }
             }
