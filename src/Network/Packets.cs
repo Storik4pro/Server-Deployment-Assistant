@@ -37,7 +37,8 @@ namespace ServerDeploymentAssistant
         IsClientCanSendGoBackRequest,
         IsClientCanSendGoForwardRequest,
         Handshake,
-        ConnectionState
+        ConnectionState,
+        TextInputContentV2,
     }
 
     public enum PacketType
@@ -107,5 +108,14 @@ namespace ServerDeploymentAssistant
         public byte G; 
         public byte B; 
         public byte A; 
+    }
+
+    public class TextInputContentPacket
+    {
+        public TextPacketType PType { get; set; } = TextPacketType.TextInputContentV2;
+        public string Text { get; set; }
+        public string Placeholder { get; set; }
+        public double px { get; set; }
+        public double py { get; set; }
     }
 }
