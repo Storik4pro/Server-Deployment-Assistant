@@ -35,5 +35,6 @@ namespace ServerDeploymentAssistant
         public readonly static string GetActiveElementText = LoadEmbeddedScript("ServerDeploymentAssistant.src.JavaScript.GetActiveElementText.js");
         public readonly static string GetFocusActiveElementText = LoadEmbeddedScript("ServerDeploymentAssistant.src.JavaScript.GetFocusActiveElementText.js");
         public readonly static string SetCursorInInputField = LoadEmbeddedScript("ServerDeploymentAssistant.src.JavaScript.SetCursorInInputField.js");
+        public readonly static string GetActiveTextElementData = LoadEmbeddedScript("ServerDeploymentAssistant.src.JavaScript.GetActiveTextElementData.js");
     }
 }
