@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using CefSharp.Enums;
 using ServerDeploymentAssistant.src.Network;
+using System.Security.Cryptography.X509Certificates;
+using System.IO.Ports;
 
 namespace ServerDeploymentAssistant.src.Helpers
 {
@@ -89,13 +91,54 @@ namespace ServerDeploymentAssistant.src.Helpers
                 else
                 {
                     browser.EvaluateScriptAsync(JavaScriptHelper.SetCursorInInputField);
-                    var response = browser.EvaluateScriptAsync(JavaScriptHelper.GetActiveElementText).ContinueWith(t =>
+                    string _text = "";
+                    var _response = browser.EvaluateScriptAsync(JavaScriptHelper.GetActiveElementText).ContinueWith(t =>
                     {
+                        _text = (string)t.Result.Result;
                         StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(new TextPacket
                         {
                             PType = TextPacketType.TextInputContent,
-                            text = (string)t.Result.Result
+                            text = _text
                         }));
+                    });
+                    var task = browser.EvaluateScriptAsync(JavaScriptHelper.GetActiveTextElementData);
+                    task.ContinueWith(t =>
+                    {
+                        var response = t.Result;
+                        if (!response.Success || response.Result == null)
+                        {
+                            StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(new TextInputContentPacket
+                            {
+                                Text = _text,
+                                Placeholder = "",
+                                px = 0,
+                                py = 0
+                            }));
+                            return;
+                        }
+
+                        if (!(response.Result is IDictionary<string, object> dict))
+                        {
+                            return;
+                        }
+
+                        string value = dict.ContainsKey("value") ? dict["value"]?.ToString() ?? "" : "";
+                        string placeholder = dict.ContainsKey("placeholder") ? dict["placeholder"]?.ToString() ?? "" : "";
+
+                        int x = 0, y = 0;
+
+                        Int32.TryParse(dict["x"].ToString(), out x);
+                        Int32.TryParse(dict["y"].ToString(), out y);
+
+                        var packet = new TextInputContentPacket
+                        {
+                            Text = value,
+                            Placeholder = placeholder,
+                            px = x,
+                            py = y
+                        };
+
+                        StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(packet));
                     });
                 }
             }
@@ -172,6 +215,7 @@ namespace ServerDeploymentAssistant.src.Helpers
         public static ChromiumWebBrowser CreateChromiumWebBrowser(string url)
         {
             RemoveAudioHandlers();
+            RemoveCertHandlers();
             ChromiumWebBrowser _browser;
             _browser = new ChromiumWebBrowser(url);
             _browser.Size = new System.Drawing.Size(1440 / 2, 1248);
@@ -186,7 +230,70 @@ namespace ServerDeploymentAssistant.src.Helpers
             audioHelper.onAudioStreamStarted += Network.AudioStreamServer.Instance.OnAudioStreamStarted;
             audioHelper.onAudioStreamPacket += Network.AudioStreamServer.Instance.OnAudioStreamPacket;
             _browser.AudioHandler = audioHelper;
+
+            _browser.FrameLoadEnd += CertHandler;
+
             return _browser;
+        }
+
+        private static void CertHandler(object sender, FrameLoadEndEventArgs args)
+        {
+            ChromiumWebBrowser _sender = sender as ChromiumWebBrowser;
+            if (!args.Frame.IsMain)
+                return;
+
+            Cef.UIThreadTaskFactory.StartNew(delegate
+            {
+                var host = _sender.GetBrowser().GetHost();
+                var navEntry = host.GetVisibleNavigationEntry();
+                var sslStatus = navEntry?.SslStatus;
+                if (sslStatus != null)
+                {
+                    var certProblems = sslStatus.CertStatus;
+                    bool hasCertError = certProblems != CefSharp.CertStatus.None;
+
+                    bool isTls = sslStatus.IsSecureConnection;
+                    var tlsVersion = sslStatus.SslVersion;
+
+                    X509Certificate2 cert = sslStatus.X509Certificate;
+
+                    string subject = null;
+                    string issuer = null;
+                    DateTime validFrom = new DateTime();
+                    DateTime validUntil = new DateTime();
+                    string thumbprint = null;
+                    string serialNumber = null;
+                    string publicKey = null;
+
+                    if (cert != null)
+                    {
+                        subject = cert.Subject;
+                        issuer = cert.Issuer;
+                        validFrom = cert.NotBefore;
+                        validUntil = cert.NotAfter;
+                        thumbprint = cert.Thumbprint;
+                        serialNumber = cert.SerialNumber;
+                        publicKey = cert.GetPublicKeyString();
+                    }
+
+                    ConnectionSecurePacket connectionSecurePacket = new ConnectionSecurePacket
+                    {
+                        IsSecureConnection = isTls,
+                        CertificateError = hasCertError,
+                        CertificateErrorName = certProblems.ToString(),
+                        TlsVersion = tlsVersion.ToString(),
+                        Url = navEntry.DisplayUrl,
+                        Subject = subject,
+                        Issuer = issuer,
+                        ValidFromTime = validFrom,
+                        ValidToTime = validUntil,
+                        Thumbprint = thumbprint,
+                        SerialNumber = serialNumber,
+                        PublicKey = publicKey,
+                    };
+                    StateHelper.Instance.streamServer.SendPacket(JsonConvert.SerializeObject(connectionSecurePacket));
+                }
+            });
         }
 
         private static void CefPaint(object sender, OnPaintEventArgs e)
@@ -405,12 +512,27 @@ namespace ServerDeploymentAssistant.src.Helpers
             }
         }
 
+        public static void RemoveCertHandlers()
+        {
+            List<Tab> openTabs = TabsManager.Instance.tabs;
+
+            for (int i = 0; i < openTabs.Count; i++)
+            {
+                openTabs[i].Browser.FrameLoadEnd -= CertHandler;
+            }
+        }
+
         public static void SetAudioHandlersToBrowser(ChromiumWebBrowser chromiumWebBrowser)
         {
             AudioHelper audioHelper = new AudioHelper();
             audioHelper.onAudioStreamStarted += StateHelper.Instance.audioServer.OnAudioStreamStarted;
             audioHelper.onAudioStreamPacket += StateHelper.Instance.audioServer.OnAudioStreamPacket;
             chromiumWebBrowser.AudioHandler = audioHelper;
+        }
+
+        public static void SetCertHandlersToBrowser(ChromiumWebBrowser chromiumWebBrowser)
+        {
+            chromiumWebBrowser.FrameLoadEnd += CertHandler;
         }
 
         private static void SendNavigationInformation()

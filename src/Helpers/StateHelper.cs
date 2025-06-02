@@ -25,6 +25,12 @@ namespace ServerDeploymentAssistant.src.Helpers
             }
         }
 
+        public string Version { get; set; }
+
+        public readonly string[] SupportedFeatures = { 
+            "RECENT", "CERTINFO", "TEXTIV2"
+        };
+
         public EventHandler OnNotifyOpenedTabs;
 
         public void NotifyOpenedTabs()
